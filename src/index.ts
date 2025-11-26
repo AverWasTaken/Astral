@@ -53,7 +53,9 @@ client.on('messageCreate', async (message) => {
     if (content.includes(word)) {
       try {
         await message.delete();
-        await message.channel.send(`${message.author.mention}, ${response}`);
+        if (message.channel.isTextBased()) {
+          await message.channel.send(`${message.author.toString()}, ${response}`);
+        }
         return;
       } catch (error) {
         console.error('Error handling learned word:', error);
@@ -66,7 +68,9 @@ client.on('messageCreate', async (message) => {
   if (filterResponse) {
     try {
       await message.delete();
-      await message.channel.send(`${message.author.mention}, ${filterResponse}`);
+      if (message.channel.isTextBased()) {
+        await message.channel.send(`${message.author.toString()}, ${filterResponse}`);
+      }
       return;
     } catch (error) {
       console.error('Error handling filter:', error);
@@ -82,7 +86,7 @@ client.on('messageCreate', async (message) => {
   // Handle mentions
   if (message.mentions.has(client.user!)) {
     try {
-      const response = await generateHumanResponse(content, message.author.mention, learnedWords);
+      const response = await generateHumanResponse(content, message.author.toString(), learnedWords);
       await message.reply(response);
     } catch (error) {
       console.error('Error generating response:', error);
@@ -143,7 +147,7 @@ client.on('messageCreate', async (message) => {
         break;
 
       case 'mute': {
-        const targetUser = message.mentions.first();
+        const targetUser = message.mentions.users.size > 0 ? [...message.mentions.users.values()][0] : undefined;
         const member = message.guild?.members.cache.get(targetUser?.id!);
         const minutes = parseInt(args[2]) || 5;
         const reason = args.slice(3).join(' ') || 'No reason provided';
@@ -152,14 +156,14 @@ client.on('messageCreate', async (message) => {
       }
 
       case 'unmute': {
-        const targetUser = message.mentions.first();
+        const targetUser = message.mentions.users.size > 0 ? [...message.mentions.users.values()][0] : undefined;
         const member = message.guild?.members.cache.get(targetUser?.id!);
         await moderation.handleUnmute(message, member);
         break;
       }
 
       case 'ban': {
-        const targetUser = message.mentions.first();
+        const targetUser = message.mentions.users.size > 0 ? [...message.mentions.users.values()][0] : undefined;
         const member = message.guild?.members.cache.get(targetUser?.id!);
         const reason = args.slice(2).join(' ') || null;
         await moderation.handleBan(message, member, reason);
@@ -167,7 +171,7 @@ client.on('messageCreate', async (message) => {
       }
 
       case 'kick': {
-        const targetUser = message.mentions.first();
+        const targetUser = message.mentions.users.size > 0 ? [...message.mentions.users.values()][0] : undefined;
         const member = message.guild?.members.cache.get(targetUser?.id!);
         const reason = args.slice(2).join(' ') || null;
         await moderation.handleKick(message, member, reason);

@@ -28,14 +28,19 @@ export async function handleLearn(
   }
 
   try {
+    if (!message.reference?.messageId) {
+      await message.reply('Could not find the replied message!');
+      return;
+    }
+    
     const repliedMsg = await message.channel.messages.fetch(message.reference.messageId);
     const phrase = repliedMsg.content.toLowerCase();
     const response = message.content.slice(6).trim();
 
-    if (response) {
+    if (response && message.channel.isSendable()) {
       learnedWords[phrase] = response;
       saveLearnedWords(learnedWords);
-      await message.channel.send(`Ight bet, I learned that ${message.author.mention} ✅`);
+      await message.channel.send(`Ight bet, I learned that ${message.author.toString()} ✅`);
     }
 
     try {
@@ -59,19 +64,23 @@ export async function handlePurge(message: Message, amount: number): Promise<voi
   }
 
   if (amount < 10 || amount > 200) {
-    await message.reply(`${message.author.mention}, purge must be between 10–200 messages.`);
+    await message.reply(`${message.author.toString()}, purge must be between 10–200 messages.`);
     return;
   }
 
   try {
-    const deleted = await message.channel.bulkDelete(amount + 1, true);
-    const msg = await message.channel.send(`✅ Purged ${deleted.size - 1} messages.`);
+    if (!message.channel.isDMBased() && message.channel.isTextBased()) {
+      const deleted = await message.channel.bulkDelete(amount + 1, true);
+      const msg = await message.channel.send(`✅ Purged ${deleted.size - 1} messages.`);
 
-    setTimeout(() => {
-      msg.delete().catch(() => {
-        // Message may have been deleted already
-      });
-    }, 4000);
+      setTimeout(() => {
+        msg.delete().catch(() => {
+          // Message may have been deleted already
+        });
+      }, 4000);
+    } else {
+      await message.reply('This command can only be used in text channels!');
+    }
   } catch (error) {
     console.error('Error purging messages:', error);
     await message.reply('Error purging messages 😭');
@@ -84,7 +93,7 @@ export async function handlePurge(message: Message, amount: number): Promise<voi
 export async function handleYtvid(message: Message, query: string = 'interesting videos'): Promise<void> {
   try {
     const videos = await searchYoutube(query);
-    await message.reply(`${message.author.mention}, check these out:\n${videos.join('\n')}`);
+    await message.reply(`${message.author.toString()}, check these out:\n${videos.join('\n')}`);
   } catch (error) {
     console.error('Error fetching YouTube videos:', error);
     await message.reply(`Error pulling videos 😭`);
@@ -97,10 +106,12 @@ export async function handleYtvid(message: Message, query: string = 'interesting
 export async function handleLaugh(message: Message): Promise<void> {
   try {
     const gifUrl = await fetchTenorGif('laugh');
-    if (gifUrl) {
+    if (gifUrl && message.channel.isSendable()) {
       await message.channel.send(gifUrl);
-    } else {
+    } else if (!gifUrl) {
       await message.reply("Still couldn't find a gif 😭 (your Tenor key might be invalid)");
+    } else {
+      await message.reply("Can't send in this channel type!");
     }
   } catch (error) {
     console.error('Error fetching laugh GIF:', error);
@@ -121,7 +132,11 @@ export async function handleKirk(message: Message): Promise<void> {
   ];
 
   const gifUrl = kirkLinks[Math.floor(Math.random() * kirkLinks.length)];
-  await message.channel.send(gifUrl);
+  if (message.channel.isSendable()) {
+    await message.channel.send(gifUrl);
+  } else {
+    await message.reply("Can't send in this channel type!");
+  }
 }
 
 /**
@@ -134,6 +149,10 @@ export async function handleHeat(message: Message): Promise<void> {
   ];
 
   const gifUrl = heatLinks[Math.floor(Math.random() * heatLinks.length)];
-  await message.channel.send(gifUrl);
+  if (message.channel.isSendable()) {
+    await message.channel.send(gifUrl);
+  } else {
+    await message.reply("Can't send in this channel type!");
+  }
 }
 

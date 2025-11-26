@@ -22,7 +22,7 @@ export async function handleMute(
   try {
     const duration = minutes * 60 * 1000;
     await member.timeout(duration, reason);
-    await message.reply(`${member.mention} muted for ${minutes} minutes.\nReason: ${reason}`);
+    await message.reply(`${member.user.toString()} muted for ${minutes} minutes.\nReason: ${reason}`);
   } catch (error) {
     console.error('Error muting member:', error);
     await message.reply('Error muting member 😭');
@@ -45,7 +45,7 @@ export async function handleUnmute(message: Message, member: GuildMember | undef
 
   try {
     await member.timeout(null, 'Unmuted');
-    await message.reply(`${member.mention} has been unmuted.`);
+    await message.reply(`${member.user.toString()} has been unmuted.`);
   } catch (error) {
     console.error('Error unmuting member:', error);
     await message.reply('Error unmuting member 😭');
@@ -77,7 +77,7 @@ export async function handleBan(
       // User may have DMs disabled
     }
 
-    await member.ban({ reason });
+    await member.ban({ reason: reason ?? undefined });
 
     const embed = new EmbedBuilder()
       .setTitle('🔨 User Banned')
@@ -85,7 +85,9 @@ export async function handleBan(
       .setColor(0xff0000)
       .setImage('https://i.imgur.com/6YV2G7U.png');
 
-    await message.channel.send({ embeds: [embed] });
+    if (message.channel.isSendable()) {
+      await message.channel.send({ embeds: [embed] });
+    }
   } catch (error) {
     console.error('Error banning member:', error);
     await message.reply('Error banning member 😭');
@@ -117,7 +119,7 @@ export async function handleKick(
       // User may have DMs disabled
     }
 
-    await member.kick(reason);
+    await member.kick(reason ?? undefined);
 
     const embed = new EmbedBuilder()
       .setTitle('⚽ User Kicked')
@@ -125,7 +127,9 @@ export async function handleKick(
       .setColor(0xffa500)
       .setImage('https://imgur.com/gallery/brazilian-grandpa-SSUbBKJ');
 
-    await message.channel.send({ embeds: [embed] });
+    if (message.channel.isSendable()) {
+      await message.channel.send({ embeds: [embed] });
+    }
   } catch (error) {
     console.error('Error kicking member:', error);
     await message.reply('Error kicking member 😭');
