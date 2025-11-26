@@ -146,6 +146,10 @@ client.on('messageCreate', async (message) => {
         await general.handleHeat(message);
         break;
 
+      case 'ping':
+        await general.handlePing(message);
+        break;
+
       case 'mute': {
         const targetUser = message.mentions.users.size > 0 ? [...message.mentions.users.values()][0] : undefined;
         const member = message.guild?.members.cache.get(targetUser?.id!);

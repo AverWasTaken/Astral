@@ -156,3 +156,14 @@ export async function handleHeat(message: Message): Promise<void> {
   }
 }
 
+/**
+ * Handle $ping command
+ */
+export async function handlePing(message: Message): Promise<void> {
+  const sent = await message.reply('Pinging...');
+  const latency = sent.createdTimestamp - message.createdTimestamp;
+  const apiLatency = message.client.ws.ping;
+
+  await sent.edit(`🏓 Pong! Latency: ${latency}ms | API Latency: ${apiLatency}ms`);
+}
+
