@@ -205,7 +205,7 @@ process.on('unhandledRejection', (reason, promise) => {
  * Login to Discord
  */
 if (!config.discord.token) {
-  console.error('❌ DISCORD_TOKEN environment variable is not set!');
+  console.error('❌ TOKEN environment variable is not set!');
   process.exit(1);
 }
 

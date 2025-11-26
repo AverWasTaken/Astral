@@ -1,15 +1,21 @@
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from project root (one level up from src/ or dist/)
+const envPath = path.resolve(__dirname, '..', '.env');
+dotenv.config({ path: envPath });
 
 /**
  * Environment and configuration variables
  */
 export const config = {
   discord: {
-    token: process.env.DISCORD_TOKEN || '',
+    token: (process.env.TOKEN || '').trim(),
     commandPrefix: '$',
   },
   youtube: {
